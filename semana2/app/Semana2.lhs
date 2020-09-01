@@ -328,21 +328,19 @@ Evidentemente sua implementação deverá atender a seguinte propriedade de corr
 6. Neste exercício você deverá re-implementar a função `dropWhile`, utilizando
 a função `foldr` de listas. A função `dropWhile` é implementada como:
 
-% ~~~~~{.haskell}
-% dropWhile :: (a -> Bool) -> [a] -> [a]
-% dropWhile p [] = []
-% dropWhile p (x : xs)
-%   | p x = dropWhile p xs
-%   | otherwise = x : xs
-% ~~~~~~
+~~~~~{.haskell}
+dropWhile :: (a -> Bool) -> [a] -> [a]
+dropWhile p [] = []
+dropWhile p (x : xs)
+  | p x = dropWhile p xs
+  | otherwise = x : xs
+~~~~~~
 
 > dropWhile' :: (a -> Bool) -> [a] -> [a]
-> dropWhile' p = foldr step base
+> dropWhile' p = fst . foldr step base
 >      where
->        step x ac = if p x then ac else []
->        base = []
-
-
+>        step x (xs, ys) = if p x then (xs, x : ys) else (x : ys, x : ys)
+>        base = ([], [])
 
 Evidentemente sua implementação deverá atender a seguinte propriedade de correção:
 
