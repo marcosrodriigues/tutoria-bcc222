@@ -14,6 +14,7 @@ Importando biblioteca com funções para manipulação
 de caracteres.
 
 > import Data.Char
+> import Data.List
 
 A seguir, importamos a bibliotecas para construção de
 testes de programas Haskell. Utilizaremos funções destas
@@ -78,7 +79,7 @@ de uma lista de inteiros que estão dentro de um certo intervalo numérico.
 a) Desenvolva a função 
 
 > inRange :: Int -> Int -> [Int] -> [Int]
-> inRange = tODO
+> inRange a b rang = [y | y <- rang, a <= y, y <= b]
 
 que retorna todos os números da lista de entrada que estão no
 intervalo especificado pelos primeiros dois parâmetros usando list comprehensions.
@@ -86,7 +87,10 @@ intervalo especificado pelos primeiros dois parâmetros usando list comprehensio
 b) Desenvolva a função
 
 > inRangeRec :: Int -> Int -> [Int] -> [Int] 
-> inRangeRec = tODO 
+> inRangeRec _ _ []  = []
+> inRangeRec a b (x : xs) 
+>  |  a <= x && x <= b   = x : inRangeRec a b xs
+>  |  otherwise           = inRangeRec a b xs
 
 que retorna todos os números da lista de entrada que estão no
 intervalo especificado pelos primeiros dois parâmetros usando recursão.
@@ -107,7 +111,7 @@ para todas as entradas. Para isso, vamos utilizar a bibliotecs de testes
 baseados em propriedades, QuickCheck. Para isso, implemente a função
 
 > propInRange :: Int -> Int -> [Int] -> Bool
-> propInRange = tODO
+> propInRange a b rang = inRange a b rang == inRangeRec a b rang
 
 que deve retornar verdadeiro somente quando os resultados de `inRange` e
 `inRangeRec` forem idênticos para os mesmos valores de entrada.
@@ -118,7 +122,7 @@ de inteiros positivos estritamente maiores que zero em uma lista.
 a) Implemente a função
 
 > countPositives :: [Int] -> Int
-> countPositives = tODO
+> countPositives xs = sum [1 | x <- xs, x > 0]
 
 usando list comprehensions. Sua implementação deve atender o seguinte caso de
 teste.
@@ -131,7 +135,10 @@ teste.
 b) Implemente a função
 
 > countPositivesRec :: [Int] -> Int
-> countPositivesRec = tODO
+> countPositivesRec []        =   0
+> countPositivesRec (x : xs) 
+>   | x > 0       = 1 + countPositivesRec xs
+>   | otherwise   = countPositivesRec xs
 
 usando recursividade.  Sua implementação deve atender o seguinte caso de
 teste.
@@ -145,7 +152,7 @@ teste.
 c) Escreva a função
 
 > propCountPositive :: [Int] -> Bool
-> propCountPositive = tODO
+> propCountPositive arr = countPositives arr == countPositivesRec arr
 
 que retorna verdadeiro se o resultado de `countPositives` e `countPositivesRec`
 coincidem para a lista de entrada.
@@ -158,7 +165,10 @@ demais letras são minúsculas.
 a) Implemente a função
 
 > toTitleString :: String -> String
-> toTitleString = tODO
+> toTitleString []  =   []
+> toTitleString (x : xs) = toUpper x : toLowers xs
+>   where toLowers = map toLower
+
 
 que converte uma string de entrada para o formato de títulos. Sua implementação
 deve atender o seguinte teste unitário.
@@ -172,7 +182,8 @@ b) Escreva uma função que caracterize a propriedade de correção da implement
 de toTitle.
 
 > propToTitleStringCorrect :: String -> Bool
-> propToTitleStringCorrect = tODO
+> propToTitleStringCorrect []   = True
+> propToTitleStringCorrect (x : xs) = toTitleString (x : xs) == (toTitle x : map toLower xs)
 
 3. Considere a tarefa de implementar uma função que retorna a metada de cada
 número par presente em uma lista.
@@ -180,7 +191,7 @@ número par presente em uma lista.
 a) Implemente a função
 
 > halfEvens :: [Int] -> [Int]
-> halfEvens = tODO
+> halfEvens xs = [x `div` 2  | x <- xs, even x]
 
 que divide pela metade todos os números pares presentes em uma lista.
 Sua definição deve usar list comprehensions e não recursão.
@@ -194,7 +205,10 @@ Sua função deve satisfazer o seguinte teste.
 b) Implemente a função
 
 > halfEvensRec :: [Int] -> [Int]
-> halfEvensRec = tODO
+> halfEvensRec []       = []
+> halfEvensRec (x : xs)
+>   |   even x      =   x `div` 2 : halfEvensRec xs
+>   |   otherwise   =   halfEvensRec xs
 
 que divide pela metade todos os números pares presentes em uma lista usando
 recursividade. Sua função deve satisfazer o seguinte teste.
@@ -207,7 +221,7 @@ recursividade. Sua função deve satisfazer o seguinte teste.
 c) Escreva a função
 
 > propHalfEvens :: [Int] -> Bool
-> propHalfEvens = tODO
+> propHalfEvens xs  = halfEvens xs  ==  halfEvensRec xs
 
 que retorna verdadeiro sempre que o resultado de `halfEvens` e `halfEvensRec`
 for idêntico.
@@ -219,7 +233,7 @@ Funções de ordem superior
 1. Implemente a função
 
 > uppers :: String -> String
-> uppers = tODO
+> uppers xs   = map toUpper xs
 
 que converte para maiúsculas todas as letras de uma string de entrada. Você
 deve implementar `uppers` utilizando a função `map`. Sua implementação deve
@@ -238,7 +252,7 @@ Além disso, apresente uma propriedade de correção para sua implementação de
 2. Implemente a função
 
 > centsToReals :: [Int] -> [Float]
-> centsToReals = tODO
+> centsToReals xs = map divid xs where divid x = (fromIntegral x) / 100.0
 
 que converte cada preço em centavos para o equivalente em reais. Sua implementação
 deve satisfazer o seguinte teste unitário:
@@ -250,7 +264,7 @@ deve satisfazer o seguinte teste unitário:
 3. Implemente a função
 
 > alphas :: String -> String
-> alphas = tODO 
+> alphas xs = filter verify xs where verify x = not (isDigit x)
 
 que remove todos os caracteres alfa-numéricos da string fornecida como entrada.
 Sua implementação deve utilizar a função `filter` e satisfazer o seguinte o seguinte
@@ -264,12 +278,13 @@ Adicionalmente, especifique uma propriedade que deve ser satisfeita pela impleme
 de `alphas`:
 
 > propAlphasCorrect :: String -> Bool
-> propAlphasCorrect = tODO
+> propAlphasCorrect ""  = True
+> propAlphasCorrect s = length s > 0
 
 4. Implemente a função 
 
 > above :: Int -> [Int] -> [Int]
-> above = tODO
+> above n xs   =  filter (dropList n) xs  where dropList n x = x > n
 
 que remove todos os elementos menores que um certo valor de uma lista de inteiros.
 Sua implementação deve utilizar a função `filter` e 
@@ -283,7 +298,8 @@ Adicionalmente, apresente uma propriedade de correção para sua implementação
 `above`.
 
 > propAboveCorrect :: Int -> [Int] -> Bool
-> propAboveCorrect = tODO
+> propAboveCorrect _ [] = True
+> propAboveCorrect n xs = length xs > 0
 
 5. Neste exercício você deverá re-implementar a função `takeWhile`, utilizando
 a função `foldr` de listas. A função `takeWhile` é implementada como:
@@ -300,8 +316,8 @@ takeWhile p (x : xs)
 > takeWhile' p
 >    = foldr step base
 >      where
->        step = tODO
->        base = tODO
+>        step x ac = if p x then x : ac else []
+>        base = []
 
 Evidentemente sua implementação deverá atender a seguinte propriedade de correção:
 
@@ -312,20 +328,19 @@ Evidentemente sua implementação deverá atender a seguinte propriedade de corr
 6. Neste exercício você deverá re-implementar a função `dropWhile`, utilizando
 a função `foldr` de listas. A função `dropWhile` é implementada como:
 
-~~~~~{.haskell}
-dropWhile :: (a -> Bool) -> [a] -> [a]
-dropWhile p [] = []
-dropWhile p (x : xs)
-  | p x = dropWhile p xs
-  | otherwise = x : xs
-~~~~~~
+% ~~~~~{.haskell}
+% dropWhile :: (a -> Bool) -> [a] -> [a]
+% dropWhile p [] = []
+% dropWhile p (x : xs)
+%   | p x = dropWhile p xs
+%   | otherwise = x : xs
+% ~~~~~~
 
 > dropWhile' :: (a -> Bool) -> [a] -> [a]
-> dropWhile' p
->    = foldr step base
+> dropWhile' p = foldr step base
 >      where
->        step = tODO
->        base = tODO
+>        step x ac = if p x then ac else []
+>        base = []
 
 
 
