@@ -338,7 +338,7 @@ Com base no apresentado, faça o que se pede.
      a) Implemente a função
 
 > innerProduct :: [Float] -> [Float] -> Float
-> innerProduct = tODO
+> innerProduct x y = sum [x | x <- (map (uncurry (*)) (zip x y))]
 
      que calcula o produto interno de dois vetores fornecidos como argumento.
      Sua função deve atender o seguinte caso de teste.
@@ -358,8 +358,28 @@ Com base no apresentado, faça o que se pede.
         Observe que ao tentarmos multiplicar matrizes cujas dimensões
         não sejam apropriadas, você deverá retornar uma lista vazia.
 
+> m1 = [[1, 2], [3, 4]]
+> m2 = [[5, 6], [7, 8]]
+
+> zipped = zip m1 (transpose m2)
+
+> customZip :: [a] -> [a] -> [(a, a)]
+> customZip [] _ = []
+> customZip _ [] = []
+> customZip (x : xs) (y : ys) = (x, y) : cz
+>    where cz       = if length ys /= 0 then 
+>                        customZip (x : xs) ys
+>                     else if length xs /= 0 then 
+>                        customZip xs (y : ys)
+>                     else []
+
 > (.*.) :: Matrix -> Matrix -> Matrix
-> _ .*. _ = tODO
+> [] .*. _ = []
+> _ .*. [] = []
+> x .*. y
+>    |    not (valid x) || not (valid y)          =    error "Invalid matrix"
+>    |    snd (dimension x) /= fst (dimension y)  =    []
+>    |    otherwise      =  [map (\e -> innerProduct (fst e) (snd e)) (customZip x (transpose y))]
 
 > prodMatrixTest :: TestTree
 > prodMatrixTest
