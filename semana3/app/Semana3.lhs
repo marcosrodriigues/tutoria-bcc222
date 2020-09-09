@@ -103,7 +103,9 @@ a seguir:
         é uniforme se todos os seus elementos são iguais.
 
 > uniform :: [Float] -> Bool
-> uniform = tODO
+> uniform []        =    True
+> uniform (x : [])  =    True
+> uniform (x : xs)  =    x == (head xs) && uniform xs
 
 Os seguintes casos de teste devem ser satisfeitos por sua implementação de `uniform`.
 
@@ -120,7 +122,9 @@ Os seguintes casos de teste devem ser satisfeitos por sua implementação de `un
      b) Usando a função `uniform`, escreva a função
 
 > valid :: Matrix -> Bool
-> valid = tODO
+> valid []          =    False
+> valid (x : [])    =    True
+> valid (x : xs)    =    length x == length (head xs) && valid xs 
 
 que testa de uma matriz é válida ou não. Sua função deve passar nos seguintes casos de teste.
 
@@ -138,7 +142,8 @@ que testa de uma matriz é válida ou não. Sua função deve passar nos seguint
 2. Desenvolva a função
 
 > dimension :: Matrix -> (Int,Int)
-> dimension = tODO
+> dimension []           =    (0,0)
+> dimension (x : xs)     =    (length (x : xs), length x)          
 
 que retorna as dimensões (número de linhas e colunas) de uma dada matriz. Sua definição deve
 considerar que a dimensão de matrizes inválidas é definida como `(0,0)`.
@@ -156,7 +161,9 @@ Usando sua definição de `dimension`, implemente uma função que testa se uma 
 _Lembre-se_: Matrizes inválidas não são quadradas!
 
 > square :: Matrix -> Bool
-> square = tODO
+> square []    =    False
+> square xs    =    valid xs && (fst (dim xs) == snd (dim xs))
+>         where dim = dimension
 
 > squareTests :: TestTree
 > squareTests
@@ -180,7 +187,12 @@ _Lembre-se_: Matrizes inválidas não são quadradas!
 3. Implemente a função
 
 > idMatrix :: Int -> Matrix
-> idMatrix = tODO
+> idMatrix 0 = []
+> idMatrix n = [ line |  x <- [1..n], 
+>                        line <- [
+>                             [fromIntegral (if y == x then 1 else 0) | y <- [1..n]]
+>                        ]
+>                   ]
 
 que a partir de um inteiro positivo $n \geq 1$ gera a matriz identidade de dimensão $n \times n$.
 
@@ -212,7 +224,7 @@ zipWith f (x : xs) (y : ys) = f x y : zipWith f xs ys
 Apresente uma definição de `zipWith` em termos das funções `map`, `zip` e `uncurry`.
 
 > zipWith' ::  (a -> b -> c) -> [a] -> [b] -> [c]
-> zipWith' = tODO
+> zipWith' f x y = map (\e -> uncurry f e) (zip x y)
 
 5. Somar duas matrizes de mesma dimensão consiste em adicionar os elementos que ocorrem na mesma posição
 (i.e., mesma linha e mesma coluna) nas duas matrizes, para obter o elemento nessa posição na matriz
@@ -239,7 +251,10 @@ $$
      a)  Desenvolva a função
 
 > nullMatrix :: (Int,Int) -> Matrix
-> nullMatrix = tODO
+> nullMatrix (0, _) = []
+> nullMatrix (_, 0) = []
+> nullMatrix (a, b) = [ line | x <- [1..a],
+>                             line <- [ [0 | y <- [1 .. b]]]]
 
          que produz uma matriz nula (com zeros em todas as posições) de dimensões 
          às fornecidas como parâmetros.
@@ -247,7 +262,9 @@ $$
      b) Defina a função
 
 > addRow :: [Float] -> [Float] -> [Float]
-> addRow = tODO
+> addRow [] a  = a
+> addRow a []  = a
+> addRow x y   = map (uncurry (+)) (zip x y)
 
         que soma duas linhas de uma matriz.
 
@@ -263,7 +280,9 @@ $$
         de duas matrizes.
 
 > (.+.) :: Matrix -> Matrix -> Matrix
-> _ .+. _ = tODO
+> [] .+. a               = a
+> a  .+. []              = a
+> (x : xs) .+. (y : ys)  = [addRow x y] ++ ( xs .+. ys )
 
 
         Sua implementação deve satisfazer os seguintes testes.
