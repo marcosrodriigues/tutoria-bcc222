@@ -195,7 +195,7 @@ sua implementação de `numberWords`.
 4. Utilizando sua função `numberWorlds`, implemente
 
 > numberAll :: [(Int, Line)] -> [(Int, Word)]
-> numberAll = tODO
+> numberAll xs = concat [ numberWords x | x <- xs ]
 
 que associa a todos palavras de um texto o seu respectivo número de linha.
 
@@ -214,7 +214,10 @@ Sua implementação de `numberAll` deve satisfazer os seguintes casos de teste.
 5. Desenvolva a função
 
 > sortEntries :: [(Int,Word)] -> [(Int, Word)]
-> sortEntries = tODO
+> sortEntries [] = []
+> sortEntries (x : xs) = sortEntries [y | y <- xs, y .<. x] 
+>                       ++ [x] ++
+>                        sortEntries [y | y <- xs, not (y .<. x)] 
 
 que ordena uma lista de palavras e números de linhas utilizando a seguinte
 função de comparação:
