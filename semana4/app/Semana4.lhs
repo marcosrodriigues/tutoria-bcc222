@@ -126,7 +126,11 @@ apresentam a solução passo a passo deste problema.
 das linhas que o formam.
 
 > lines :: Text -> [Line]
-> lines = tODO
+> lines = comb . foldr step ([], [])
+>     where comb (xs, ys) = if null xs then ys else xs : ys;
+>           step c (xs, ys)
+>                 | c == '\n'       = ([], xs : ys)
+>                 | otherwise       = (c : xs, ys)
 
 Os seguintes casos de teste devem ser satisfeitos por sua implementação de `lines`.
 
@@ -145,7 +149,8 @@ Os seguintes casos de teste devem ser satisfeitos por sua implementação de `li
 número.
 
 > numberLines :: [Line] -> [(Int, Line)]
-> numberLines = tODO
+> numberLines lines = zip [1.. length lines] (lines)
+
 
 Os seguintes casos de teste devem ser satisfeitos por sua implementação de `numberLines`.
 
@@ -163,10 +168,19 @@ Os seguintes casos de teste devem ser satisfeitos por sua implementação de `nu
 3. Desenvolva a função
 
 > numberWords :: (Int,Line) -> [(Int, Word)]
-> numberWords = tODO
+> numberWords (i, xs) = zip (repeat i) (splitString xs)
+
+> splitString :: String -> [String]
+> splitString = compose . foldr step ([], [])
+>     where compose (x, y) = x : y
+>           step x (palavraAtual, lista) 
+>                 = if x == ' ' || x == '\n' then 
+>                       ([], palavraAtual : lista) 
+>                 else 
+>                       (x : palavraAtual, lista)
 
 que divide uma linhas nas palavras que a formam adicionando a cada palavra o número da
-linha em que essa está contida. Os seguintes casos de teste devem ser satisfeitos por
+linha em que essa está contida. Os seguintes casos de teste devem ser satvcs vndemisfeitos por
 sua implementação de `numberWords`. 
 
 > numberWordsTests :: TestTree

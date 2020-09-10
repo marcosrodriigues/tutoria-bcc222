@@ -366,12 +366,7 @@ Com base no apresentado, faça o que se pede.
 > customZip :: [a] -> [a] -> [(a, a)]
 > customZip [] _ = []
 > customZip _ [] = []
-> customZip (x : xs) (y : ys) = (x, y) : cz
->    where cz       = if length ys /= 0 then 
->                        customZip (x : xs) ys
->                     else if length xs /= 0 then 
->                        customZip xs (y : ys)
->                     else []
+> customZip x y = [ (a, b) | a <- x, b <- y]
 
 > (.*.) :: Matrix -> Matrix -> Matrix
 > [] .*. _ = []
@@ -379,7 +374,10 @@ Com base no apresentado, faça o que se pede.
 > x .*. y
 >    |    not (valid x) || not (valid y)          =    error "Invalid matrix"
 >    |    snd (dimension x) /= fst (dimension y)  =    []
->    |    otherwise      =  [map (\e -> innerProduct (fst e) (snd e)) (customZip x (transpose y))]
+>    |    otherwise      =    transpose (map 
+>                                 (\e -> [innerProduct (fst e) (snd e)]) 
+>                                 (customZip x (transpose y)))
+>                           
 
 > prodMatrixTest :: TestTree
 > prodMatrixTest
