@@ -266,7 +266,7 @@ deve satisfazer o seguinte teste unitário:
 > alphas :: String -> String
 > alphas xs = filter verify xs where verify x = not (isDigit x)
 
-que remove todos os caracteres alfa-numéricos da string fornecida como entrada.
+que remove todos os caracteres não alfabéticos da string fornecida como entrada.
 Sua implementação deve utilizar a função `filter` e satisfazer o seguinte o seguinte
 teste unitário:
 
@@ -422,6 +422,7 @@ Funções auxiliares
 >                   toTitleStringGroup,
 >                   halfEvensGroup,
 >                   centsToRealsTest,
+>                   uppersGroup,
 >                   alphasGroup,
 >                   aboveGroup,
 >                   QC.testProperty "takeWhile' correct" propTakeWhile',
