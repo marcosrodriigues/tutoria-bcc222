@@ -48,12 +48,17 @@ A partir do apresentado, faça o que se pede:
 representar números naturais de acordo com a
 definição recursiva descrita.
 
-> data Nat = TODO
+> data Nat = Zero 
+>          | Suc Nat
+>   deriving (Eq, Ord, Show)
 
 2. Implemente a função
 
 > fromNat :: Nat -> Int
-> fromNat = tODO
+> fromNat Zero        = 0
+> fromNat (Suc n)
+>   | n == Zero       = 1
+>   | otherwise       = 1 + (fromNat n)
 
 que converte um valor do tipo Nat no número
 inteiro correspondente.
@@ -61,7 +66,12 @@ inteiro correspondente.
 3. Implemente a função
 
 > toNat :: Int -> Maybe Nat
-> toNat = tODO
+> toNat n
+>   | n <  0    = Nothing
+>   | otherwise =
+>       case toNat (n - 1) of
+>         Nothing   -> Just Zero
+>         Just v    -> Just (Suc v)
 
 que converte um inteiro no valor do tipo Nat
 correspondente. Caso o inteiro fornecido seja
@@ -71,7 +81,9 @@ negativo, retorne o valor Nothing.
 valores do tipo Nat:
 
 > (.+.) :: Nat -> Nat -> Nat
-> _ .+. _ = tODO
+> Zero .+. n = n
+> n .+. Zero = n
+> (Suc n) .+. (Suc m) = Suc (Suc (n .+. m))
 
 Sua função deve ser definida por recursão
 sobre a estrutura do primeiro parâmetro
@@ -81,15 +93,20 @@ de tipo Nat.
 sobre valores de tipo Nat:
 
 > (.*.) :: Nat -> Nat -> Nat
-> _ .*. _ = tODO
+> Zero .*. _ = Zero
+> _ .*. Zero = Zero
+> (Suc n) .*. (Suc m)
+>   | n == Zero   = m
+>   | m == Zero   = n
+>   | otherwise   = (Suc n .+. Suc m) .+. (n .*. m)
 
 6. Usando o tipo Nat, podemos definir
 uma função de ordem superior que funciona
 como fold para o tipo Nat. Implemente a função
 
 > rec :: a -> (Nat -> a -> a) -> Nat -> a
-> rec v ih _ = tODO
-> rec v ih _ = tODO
+> rec v _ Zero        =   v
+> rec v f (Suc n)     =   f (Suc n) (rec v f n)
 
 que codifica o princípio de indução para
 números naturais. Note que quando o número
@@ -105,7 +122,8 @@ resultado da chamada recursiva para rec.
 definição alternativa para a adição:
 
 > (.++.) :: Nat -> Nat -> Nat
-> n .++. m = tODO
+> n .++. m = rec m step n 
+>   where step n' ac = Suc ac
 
 8. Defina a função de subtração sobre o
 tipo Nat. Adote, como convenção que quando
@@ -114,7 +132,9 @@ o primeiro parâmetro for menor que o segundo
 sua função deverá retornar zero.
 
 > (.-.) :: Nat -> Nat -> Nat
-> n .-. m = tODO
+> Zero .-. _ = Zero
+> n .-. Zero = n
+> (Suc n) .-. (Suc m) = n .-. m
 
 9. A classe Num presente na biblioteca Prelude
 possui a seguinte definição:
