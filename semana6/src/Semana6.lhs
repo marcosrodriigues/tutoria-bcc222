@@ -80,6 +80,12 @@ data Instr
   deriving (Eq, Ord, Show)
 \end{code}
 
+\begin{code}
+vm1 = VMState 1 [] [(Name "var1", 10), (Name "var2", 20)]
+vm2 = VMState 2 [15] [(Name "var1", 10), (Name "var2", 20)]
+vm3 = VMState 3 [1, 2, 3, 4] [(Name "var1", 10), (Name "var2", 20)]
+vm4 = VMState 0 [] []
+\end{code}
 
 1 - A instrução push(n) insere o valor inteiro n no topo da pilha presente
 no tipo de dados `VMState`. Para implementar a semântica dessa instrução,
@@ -87,7 +93,7 @@ implemente a função:
 
 \begin{code}
 push :: Int -> VMState -> VMState
-push = undefined
+push n vm = vm{ stack = n : (stack vm) }
 \end{code}
 
 que altera o estado atual da máquina empilhando o inteiro fornecido como
@@ -99,7 +105,18 @@ pilha de execução. Implemente essa funcionalidade na função:
 
 \begin{code}
 lookMemory :: Name -> VMState -> VMState
-lookMemory = undefined
+lookMemory name vm
+  | name == fst (head (memory vm))  = vm { stack = (snd (head (memory vm)) : (stack vm))}
+  | otherwise                       = lookMemory name vm { memory = tail (memory vm)}
+\end{code}
+
+=== Decidi fazer também usando "lookUp" pra treinar o case of ===
+\begin{code}
+lookMemory' :: Name -> VMState -> VMState
+lookMemory' name vm
+  = case lookup name (memory vm) of
+      Nothing -> vm
+      Just v  -> push v vm
 \end{code}
 
 Note que essa função deve retornar o estado da máquina alterado após a
@@ -112,7 +129,9 @@ topo da pilha de execução. Implemente essa funcionalidade na função:
 
 \begin{code}
 setMemory :: Name -> VMState -> VMState
-setMemory = undefined
+setMemory name vm
+  | fst (head (memory vm)) == name  = vm{memory = [(name, head (stack vm))] ++ tail (memory vm)}
+  | otherwise   = vm{memory = (head (memory vm)) : memory (setMemory name vm{memory = tail (memory vm)})}
 \end{code}
 
 4 - As operações add e sub utilizam os dois elementos do topo da pilha
@@ -123,8 +142,11 @@ os elementos do topo da pilha. Implemente a função:
 
 \begin{code}
 stackOp :: (Int -> Int -> Int) -> VMState -> VMState
-stackOp op st
-  = undefined
+stackOp op vm 
+  | (length (svm) >= 2)   = vm{stack = (op (head (svm)) (head (tail svm))) : tail (tail svm) }
+  | otherwise             = vm
+    where
+      svm = stack vm
 \end{code}
 
 que aplica a operação fornecida como primeiro parâmetro aos dois primeiros
@@ -139,7 +161,7 @@ um valor inteiro a este. Implemente a função:
 
 \begin{code}
 addPC :: Int -> VMState -> VMState
-addPC = undefined
+addPC n vm = vm{ pc = n }
 \end{code}
 
 que adiciona ao valor atual do contador de instrução a constante inteira
@@ -152,7 +174,15 @@ Implemente a função:
 
 \begin{code}
 condJump :: (Int -> Int -> Bool) -> Int -> VMState -> VMState
-condJump = undefined
+condJump f d vm
+  | length svm >= 2   = if (f hsvm (head tsvm)) then apc d else apc (pcvm + 1)
+  | otherwise = apc (pcvm + 1)
+    where
+      svm = (stack vm)
+      hsvm = (head svm)
+      tsvm = (tail svm)
+      apc n = addPC n vm
+      pcvm = (pc vm)
 \end{code}
 
 que a partir de um teste (igualdade ou desigualdade), um deslocamento e
@@ -165,7 +195,15 @@ execução de uma instrução da máquina pode ser implementada pela seguinte
 função:
 \begin{code}
 vmStep :: Instr -> VMState -> VMState
-vmStep = undefined
+vmStep (IPush n)    vm = push n vm
+vmStep (IVar name)  vm = lookMemory name vm
+vmStep (ISet name)  vm = setMemory name vm
+vmStep (IAdd )      vm = stackOp (+) vm
+vmStep (ISub )      vm = stackOp (-) vm
+vmStep (IJump n)    vm = addPC n vm
+vmStep (IJumpNeq n) vm = condJump (/=) n vm
+vmStep (IJumpEq n)  vm = condJump (==) n vm
+vmStep (IHalt )     vm = vm
 \end{code}
 que a partir de uma instrução a ser executada e do estado atual da máquina
 produz o um novo estado resultante.
@@ -174,7 +212,12 @@ produz o um novo estado resultante.
 execução a ser executada. Implemente a função
 \begin{code}
 nextInstr :: [Instr] -> VMState -> Maybe Instr
-nextInstr = undefined
+nextInstr []  _ = Nothing
+nextInstr (x : xs) vm 
+  | (pc vm) > length (x : xs)  = Nothing
+  | x == IHalt                 = Nothing
+  | otherwise                  = Just (head (drop (pc vm - 1) (x : xs)))
+  
 \end{code}
 
 que a partir de um programa e o estado atual da máquina, retorna
@@ -186,7 +229,11 @@ valor `Nothing` deve ser retornado.
 da máquina small utilizando a seguinte função:
 \begin{code}
 exec :: [Instr] -> VMState -> VMState
-exec = undefined
+exec []       vm  = vm
+exec (x : xs) vm
+  = case nextInstr (x : xs) vm  of
+      Nothing   ->  vm
+      Just inst ->  exec xs (vmStep x vm)
 \end{code}
 que deve obter a próxima instrução a ser executada e continuar a execução
 do programa sobre o estado da máquina alterado pela última instrução. A
