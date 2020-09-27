@@ -171,8 +171,14 @@ apresentada anteriormente.
 -}
 
 instance Show Type where
-  show = undefined
-
+  show t
+    | t == TyInt                = "Int"
+    | t == TyDouble             = "Double"
+    | t == TyBool               = "Bool"
+    | t == TyVarChar (Just 1)   = "VarChar[" ++ [n] ++ "]"
+    | t == TyVarChar Nothing    = "VarChar[255]"
+    | t == TyDate               = "Date"
+    | t == TyCurrency           = "Currency"
 {-
 b) Desenvolva uma instância para `Show` para o tipo `Schema` que permita
 imprimir esquemas de tabelas de maneira similar ao exemplo apresentado

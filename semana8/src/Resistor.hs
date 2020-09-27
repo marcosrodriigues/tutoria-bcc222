@@ -32,7 +32,11 @@ table = [(Black,  [Just 0.0, Just 0.0, Just 0.0]),
 -- exercise 1.
 
 value :: Color -> Int -> Maybe Float
-value = undefined
+value color n 
+  = if n < 0 || n > 3 then Nothing 
+  else case lookup color table of
+      Nothing         -> Nothing
+      Just floats     -> (head (drop n floats))
 
 newtype Resistor
   = Resistor [Color]
@@ -41,22 +45,41 @@ newtype Resistor
 -- exercise 2.
 
 valid :: Resistor -> Bool
-valid = undefined
+valid (Resistor colors) = length colors == 3
 
 -- exercise 3.
 
 resistence :: Resistor -> Float
-resistence = undefined
-
-
+resistence (Resistor colors) = (multiply . fst . foldr step base) colors
+  where
+    multiply (x : xs) = (x * 10 + (head xs)) * head (tail xs)
+    step color (xs, index) = 
+      case value color index of
+        Nothing   -> (xs, index - 1)
+        Just v    -> (v : xs, index -1)
+    base = ([], length colors - 1)
+      
 data Circuit = Parallel Circuit Circuit
              | Series   Circuit Circuit
              | Single Resistor
              deriving (Eq, Ord)
 
+parallelCirc = Parallel 
+                  (Single (Resistor [Red, Brown, Yellow])) 
+                  (Single (Resistor [Red, Brown, Yellow]))
+               
+
+serieCirc = Series (Series 
+                        (Single (Resistor [Black, Blue, Yellow])) 
+                        (Single (Resistor [Red, Yellow, Blue])))
+                  (Single (Resistor [Orange, Brown, Silver]))
 
 validCircuit :: Circuit -> Bool
-validCircuit = undefined
+validCircuit (Parallel c1 c2) = validCircuit c1 && validCircuit c2
+validCircuit (Series c1 c2) = validCircuit c1 && validCircuit c2
+validCircuit (Single circuit) = valid circuit
 
 circuitResistence :: Circuit -> Float
-circuitResistence = undefined
+circuitResistence (Parallel c1 c2)  = 1 / (1 / (circuitResistence c1) + 1 / (circuitResistence c2))
+circuitResistence (Series c1 c2)    = (circuitResistence c1 + circuitResistence c2)
+circuitResistence (Single circuit)  = resistence circuit
