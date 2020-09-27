@@ -171,14 +171,13 @@ apresentada anteriormente.
 -}
 
 instance Show Type where
-  show t
-    | t == TyInt                = "Int"
-    | t == TyDouble             = "Double"
-    | t == TyBool               = "Bool"
-    | t == TyVarChar (Just 1)   = "VarChar[" ++ [n] ++ "]"
-    | t == TyVarChar Nothing    = "VarChar[255]"
-    | t == TyDate               = "Date"
-    | t == TyCurrency           = "Currency"
+  show TyInt                  = "Int"
+  show TyDouble               = "Double"
+  show TyBool                 = "Bool"
+  show (TyVarChar (Just n))   = "VarChar[" ++ show n ++ "]"
+  show (TyVarChar Nothing)    = "VarChar"
+  show TyDate                 = "Date"
+  show TyCurrency             = "Currency"
 {-
 b) Desenvolva uma instância para `Show` para o tipo `Schema` que permita
 imprimir esquemas de tabelas de maneira similar ao exemplo apresentado
@@ -186,14 +185,16 @@ anteriormente para a tabela cliente.
 -}
 
 instance Show Schema where
-  show = undefined
+  show (t :*: Nil) = show t
+  show (t :*: s)   =  show t ++ " X " ++ show s
 
 {-
 c) Implemente a função
 -}
 
 schema :: Table -> Schema
-schema = undefined
+schema (Table name fields values) 
+  = foldr (:*:) Nil (map (\field -> (fieldType field)) fields)
 
 {-
 que dada uma tabela, representada pelo tipo de dados `Table`, retorne o seu
@@ -214,15 +215,25 @@ id nome            cpf
 -}
 
 instance Show Table where
-  show = undefined
+  show (Table name fields values) = 
+      name ++ ":\n" ++ 
+      take 50 (repeat '-') ++ "\n" ++ 
+      (foldr (++) "" (map (\field -> (fieldName field) ++ "  ") fields)) ++ "\n" ++
+      take 50 (repeat '-') ++ "\n" ++ 
+      (foldr (++) "" (map (\row -> printRow row ++ "\n") values))
 
 
+
+
+printRow :: [String] -> String
+printRow [] = ""
+printRow (x : xs) = x ++ " " ++ printRow(xs)
 {-
 Exercício 2. Defina a função
 -}
 
 count :: Table -> Int
-count = undefined
+count (Table _ _ values) = length values
 
 {-
 que retorna o número de registros presentes em uma tabela.
@@ -231,8 +242,37 @@ Exercício 3. Defina a função
 -}
 
 
-project :: Table -> [String] -> Either String Table
-project = undefined
+--project :: Table -> [String] -> Either String Table
+project :: Table -> [String] -> Either a String
+project (Table name fields values) columns = 
+  Right (show (
+    mkTable 
+      (mkTableName ([name] ++ columns)) 
+      (mkTableFields columns (Table name fields values))
+      values
+    ))
+
+
+mkTableName :: [String] -> String
+mkTableName [] = ""
+mkTableName (x : xs) 
+  | length xs > 0     = x ++ "-" ++ mkTableName xs
+  | otherwise         = x
+  
+
+mkTableFields :: [String] -> Table -> [Field]
+mkTableFields columns (Table _ fields values)
+  = findValues (findIndex columns fields) fields
+  where
+    findIndex (x : xs) (y : ys) 
+      | x == y    = x : findIndex (xs) (y : ys)
+      | ys == 0   
+      | otherwise = 
+    findValues (x : xs) (y : ys) = undefined
+
+
+mkTable :: String -> [Field] -> [[String]] -> Table
+mkTable name fields values = (Table name fields values)
 
 {-
 que receba como argumento uma tabela e uma lista de nomes de campos
