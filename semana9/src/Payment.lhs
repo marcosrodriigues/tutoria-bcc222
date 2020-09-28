@@ -80,14 +80,15 @@ Exercícios
 
 \begin{code}
 instance SalaryList Employee where
-  salaryList = undefined
+  salaryList (Employee (Person name address) (Salary salary)) = [(name, (Salary salary))]
 \end{code}
 
 2. Apresente uma instância de `SalaryList` para o tipo `Dept`.
 
 \begin{code}
 instance SalaryList Dept where
-  salaryList = undefined
+  salaryList (Dept name manager []) = salaryList manager
+  salaryList (Dept name manager (e : es)) = salaryList e ++ salaryList (Dept name manager es)
 \end{code}
 
 
@@ -95,7 +96,7 @@ instance SalaryList Dept where
 
 \begin{code}
 instance SalaryList Company where
-  salaryList = undefined
+  salaryList (Company (d : ds)) = if (ds == []) then salaryList d else  salaryList d ++ (salaryList (Company ds))
 \end{code}
 
 
@@ -103,7 +104,7 @@ instance SalaryList Company where
 
 \begin{code}
 bill :: Company -> Float
-bill = undefined
+bill company = foldr (+) 0 (map (\(name, (Salary value)) -> value) (salaryList company))
 \end{code}
 
 que calcula a soma dos salários de todos os funcionários da empresa
@@ -125,26 +126,31 @@ modificação de salários. Sua tarefa
 é implementar essas operações para os diferentes
 tipos do sistema de folha de pagamento.
 
+Função que multiplica o salário
+\begin{code}
+doubleSalary :: Salary -> Salary 
+doubleSalary (Salary f) = Salary (2 * f)
+\end{code}
+
 5. Implemente uma instância de `Modify` para o tipo `Employee`.
 
 \begin{code}
 instance Modify Employee where
-  modify = undefined
+  modify fun (Employee person salary) = Employee person (fun salary)
 \end{code}
-
 
 6. Implemente uma instância de `Modify` para o tipo `Dept`.
 
 \begin{code}
 instance Modify Dept where
-  modify = undefined
+  modify fun (Dept name manager employees) = Dept name (modify fun manager) (map (\e -> modify fun e) employees)
 \end{code}
 
 7. Implemente uma instância de `Modify` para o tipo `Company`.
 
 \begin{code}
 instance Modify Company where
-  modify = undefined
+  modify fun (Company depts) = Company (map (\d -> modify fun d) depts)
 \end{code}
 
 A seguir, alguns dados de teste para seu código
@@ -154,6 +160,12 @@ company :: Company
 company
   = Company [ Dept "Research" ralf [joost, marlow]
             , Dept "Strategy" blair []]
+
+dept1 :: Dept
+dept1 = Dept "Research" ralf [joost, marlow]
+
+dept2 :: Dept
+dept2 = Dept "Strategy" blair []
 
 ralf :: Employee
 ralf = Employee (Person "Ralf" "USA") (Salary 1000.0)
