@@ -152,6 +152,11 @@ Apresente uma instância da classe Num para o
 tipo Nat. Com isso, você será capaz de escrever
 números arábicos para denotar valores do tipo Nat.
 
+instance Num Nat where
+(+) n1 n2 = n1 .+. n2
+(-) n1 n2 = n1 .-. n2
+(*) n1 n2 = n1 .*. n2
+
 Números Inteiros
 ----------------
 
